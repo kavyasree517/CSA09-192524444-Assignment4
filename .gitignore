@@ -1,0 +1,12 @@
+*.class
+bin/
+out/
+target/
+.idea/
+.vscode/
+.env
+*.log
+*.tmp
+*.bak
+LocalDatabase.properties
+**/database.properties
