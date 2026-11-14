@@ -12,6 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class AnonymousCurrencyConverter extends JFrame {
+    private static final double USD_TO_INR = 83.0;
+    private static final double EUR_TO_INR = 90.0;
+
     private final JTextField amountField = new JTextField();
     private final JComboBox<String> fromCombo = new JComboBox<>(new String[]{"INR", "USD", "EUR"});
     private final JComboBox<String> toCombo = new JComboBox<>(new String[]{"INR", "USD", "EUR"});
@@ -44,33 +47,58 @@ public class AnonymousCurrencyConverter extends JFrame {
         panel.add(resultLabel);
         add(panel, BorderLayout.CENTER);
         add(convertButton, BorderLayout.SOUTH);
+        amountField.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleConversion();
+            }
+        });
         convertButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    double amount = Double.parseDouble(amountField.getText());
-                    double converted = convert(amount, (String) fromCombo.getSelectedItem(), (String) toCombo.getSelectedItem());
-                    resultLabel.setText(String.format("Result: %.2f", converted));
-                    JOptionPane.showMessageDialog(AnonymousCurrencyConverter.this, "Converted amount: " + String.format("%.2f", converted));
-                } catch (NumberFormatException ex) {
-                    resultLabel.setText("Result: Invalid amount");
-                    JOptionPane.showMessageDialog(AnonymousCurrencyConverter.this, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                handleConversion();
             }
         });
     }
 
+    private void handleConversion() {
+        String inputText = amountField.getText().trim();
+        if (inputText.isEmpty()) {
+            resultLabel.setText("Result: Invalid amount");
+            JOptionPane.showMessageDialog(this, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            double amount = Double.parseDouble(inputText);
+            if (amount < 0) {
+                resultLabel.setText("Result: Invalid amount");
+                JOptionPane.showMessageDialog(this, "Amount cannot be negative", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            double converted = convert(amount, (String) fromCombo.getSelectedItem(), (String) toCombo.getSelectedItem());
+            resultLabel.setText(String.format("Result: %.2f", converted));
+            JOptionPane.showMessageDialog(this, "Converted amount: " + String.format("%.2f", converted));
+        } catch (NumberFormatException ex) {
+            resultLabel.setText("Result: Invalid amount");
+            JOptionPane.showMessageDialog(this, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private double convert(double amount, String fromCurrency, String toCurrency) {
-        double inrValue = switch (fromCurrency) {
-            case "USD" -> amount / 0.012;
-            case "EUR" -> amount / 0.011;
-            default -> amount;
+        double fromRate = switch (fromCurrency) {
+            case "USD" -> USD_TO_INR;
+            case "EUR" -> EUR_TO_INR;
+            default -> 1.0;
         };
-        return switch (toCurrency) {
-            case "USD" -> inrValue * 0.012;
-            case "EUR" -> inrValue * 0.011;
-            default -> inrValue;
+        double toRate = switch (toCurrency) {
+            case "USD" -> USD_TO_INR;
+            case "EUR" -> EUR_TO_INR;
+            default -> 1.0;
         };
+        double inrValue = amount * fromRate;
+        return inrValue / toRate;
     }
 
     public static void main(String[] args) {

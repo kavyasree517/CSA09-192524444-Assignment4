@@ -20,7 +20,15 @@ The appointment desk design uses `JTextField`, `JComboBox`, `JButton`, `JLabel`,
 The search screen uses BorderLayout as the main layout, FlowLayout for toolbars, GridLayout for compact controls, and a central results panel that expands with window resize events.
 
 ## 6. Task 4: DrawPad Event Handling
-The draw pad uses `MouseAdapter`, stores `Point` objects in an `ArrayList`, and redraws every point via `paint(Graphics)` to preserve drawings after minimising and restoring the window.
+The draw pad uses `MouseAdapter`, stores `Point` objects in an `ArrayList`, and redraws every point via `paint(Graphics)` to preserve drawings after minimising and restoring the window. The verified implementation also includes keyboard support using `KeyAdapter`, allowing the user to clear or add points via keyboard input while preserving the same drawing logic.
+
+### Task 4 runtime evidence
+The live DrawPad application was compiled and exercised successfully. Genuine screenshots were captured in the Task 04 folder:
+- `output_screenshots/Task04/01_startup.png`
+- `output_screenshots/Task04/02_mouse_drawing.png`
+- `output_screenshots/Task04/03_keyboard_clear.png`
+- `output_screenshots/Task04/04_keyboard_drawing.png`
+- `output_screenshots/Task04/05_final_canvas_state.png`
 
 ## 7. Task 5: Currency Converter Event Styles
 Four implementations are provided to compare ActionListener, named inner class, anonymous inner class, and lambda expression approaches.

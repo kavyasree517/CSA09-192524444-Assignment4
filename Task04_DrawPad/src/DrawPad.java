@@ -4,6 +4,8 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Label;
 import java.awt.Point;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -21,6 +23,7 @@ public class DrawPad extends Frame {
         setLocation(100, 100);
         setLayout(null);
         setBackground(Color.WHITE);
+        setFocusable(true);
 
         clickCountLabel.setBounds(20, 20, 150, 25);
         clearButton.setBounds(200, 20, 80, 25);
@@ -36,18 +39,51 @@ public class DrawPad extends Frame {
             }
         });
 
-        clearButton.addActionListener(e -> {
-            points.clear();
-            clickCountLabel.setText("Click Count: 0");
-            repaint();
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keyCode = e.getKeyCode();
+                char keyChar = Character.toLowerCase(e.getKeyChar());
+
+                if (keyCode == KeyEvent.VK_DELETE || keyCode == KeyEvent.VK_BACK_SPACE
+                        || keyCode == KeyEvent.VK_ESCAPE || keyChar == 'c') {
+                    clearDrawing();
+                    return;
+                }
+
+                if (keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_UP
+                        || keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_LEFT
+                        || keyCode == KeyEvent.VK_RIGHT || keyChar == 'd' || keyChar == 'p') {
+                    int x = Math.max(20, Math.min(getWidth() - 20, getWidth() / 2 + (keyCode == KeyEvent.VK_LEFT ? -30
+                            : (keyCode == KeyEvent.VK_RIGHT ? 30 : 0))));
+                    int y = Math.max(40, Math.min(getHeight() - 20, getHeight() / 2 + (keyCode == KeyEvent.VK_UP ? -30
+                            : (keyCode == KeyEvent.VK_DOWN ? 30 : 0))));
+                    points.add(new Point(x, y));
+                    clickCountLabel.setText("Click Count: " + points.size());
+                    repaint();
+                }
+            }
         });
+
+        clearButton.addActionListener(e -> clearDrawing());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 dispose();
             }
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+                requestFocus();
+            }
         });
+    }
+
+    private void clearDrawing() {
+        points.clear();
+        clickCountLabel.setText("Click Count: 0");
+        repaint();
     }
 
     @Override
