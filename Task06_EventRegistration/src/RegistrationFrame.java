@@ -4,8 +4,9 @@ import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -26,12 +27,13 @@ public class RegistrationFrame extends JFrame {
     private final JComboBox<String> eventCombo = new JComboBox<>();
     private final JComboBox<String> filterCombo = new JComboBox<>();
     private final JTable registrationTable = new JTable();
-    private final JLabel statusLabel = new JLabel("Ready");
+    private final JLabel statusLabel = new JLabel("Ready - local storage");
     private final JButton previousButton = new JButton("Previous");
     private final JButton nextButton = new JButton("Next");
     private final JButton exportButton = new JButton("Export CSV");
     private final int pageSize = 5;
     private int currentOffset = 0;
+    private final Map<String, Integer> eventIdCache = new HashMap<>();
 
     private final RegistrationService registrationService = new RegistrationService();
 
@@ -95,10 +97,13 @@ public class RegistrationFrame extends JFrame {
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         statusPanel.add(statusLabel);
 
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.add(actionPanel, BorderLayout.NORTH);
+        contentPanel.add(tablePanel, BorderLayout.CENTER);
+
         setLayout(new BorderLayout(10, 10));
         add(formPanel, BorderLayout.NORTH);
-        add(actionPanel, BorderLayout.CENTER);
-        add(tablePanel, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
         add(navigationPanel, BorderLayout.SOUTH);
         add(statusPanel, BorderLayout.EAST);
 
@@ -121,14 +126,18 @@ public class RegistrationFrame extends JFrame {
                     List<Event> events = get();
                     eventCombo.removeAllItems();
                     filterCombo.removeAllItems();
+                    eventIdCache.clear();
                     eventCombo.addItem("Select event");
                     filterCombo.addItem("All Events");
                     for (Event event : events) {
                         eventCombo.addItem(event.getEventName());
                         filterCombo.addItem(event.getEventName());
+                        eventIdCache.put(event.getEventName(), event.getEventId());
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(RegistrationFrame.this, "Unable to load event list: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(RegistrationFrame.this,
+                            "Unable to load event list: " + workerErrorMessage(ex), "Storage Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
@@ -176,7 +185,8 @@ public class RegistrationFrame extends JFrame {
                     loadPage();
                 } catch (Exception ex) {
                     statusLabel.setText("Registration failed.");
-                    JOptionPane.showMessageDialog(RegistrationFrame.this, ex.getMessage(), "Registration Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(RegistrationFrame.this, workerErrorMessage(ex),
+                            "Registration Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
@@ -184,17 +194,15 @@ public class RegistrationFrame extends JFrame {
     }
 
     private int resolveEventId(String eventName) {
-        String[] events = new String[]{"Campus Tech Expo", "Robotics Workshop", "Design Thinking Hackathon"};
-        for (int i = 0; i < events.length; i++) {
-            if (events[i].equals(eventName)) {
-                return i + 1;
-            }
-        }
-        return 0;
+        Integer eventId = eventIdCache.get(eventName);
+        return eventId == null ? 0 : eventId;
     }
 
     private void loadPage() {
         String selectedFilter = (String) filterCombo.getSelectedItem();
+        previousButton.setEnabled(currentOffset > 0);
+        nextButton.setEnabled(true);
+
         SwingWorker<List<Registration>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<Registration> doInBackground() throws Exception {
@@ -210,10 +218,13 @@ public class RegistrationFrame extends JFrame {
                         model.addRow(new Object[]{registration.getRegistrationId(), registration.getStudentName(), registration.getRegistrationNumber(), registration.getEventName(), registration.getRegistrationDate()});
                     }
                     registrationTable.setModel(model);
+                    previousButton.setEnabled(currentOffset > 0);
+                    nextButton.setEnabled(rows.size() == pageSize);
                     statusLabel.setText("Loaded " + rows.size() + " records.");
                 } catch (Exception ex) {
                     statusLabel.setText("Unable to load records.");
-                    JOptionPane.showMessageDialog(RegistrationFrame.this, ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(RegistrationFrame.this, workerErrorMessage(ex),
+                            "Storage Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
@@ -247,10 +258,19 @@ public class RegistrationFrame extends JFrame {
                     get();
                     JOptionPane.showMessageDialog(RegistrationFrame.this, "CSV exported to " + finalExportFile.getAbsolutePath(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(RegistrationFrame.this, ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(RegistrationFrame.this, workerErrorMessage(ex),
+                            "Export Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
         worker.execute();
+    }
+
+    private String workerErrorMessage(Exception exception) {
+        Throwable cause = exception;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        return cause.getMessage() == null ? cause.toString() : cause.getMessage();
     }
 }

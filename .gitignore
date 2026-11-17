@@ -5,6 +5,9 @@ target/
 .idea/
 .vscode/
 .env
+.env.*
+*.properties
+!Task06_EventRegistration/database/config.example.properties
 *.log
 *.tmp
 *.bak

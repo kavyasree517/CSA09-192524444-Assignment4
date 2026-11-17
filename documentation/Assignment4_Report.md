@@ -34,7 +34,7 @@ The live DrawPad application was compiled and exercised successfully. Genuine sc
 Four implementations are provided to compare ActionListener, named inner class, anonymous inner class, and lambda expression approaches.
 
 ## 8. Task 6: Event Registration
-The event registration app separates presentation, service, DAO, and model responsibilities. The application validates input, checks duplicates, loads records with pagination, and exports CSV files.
+The event registration app separates presentation, service, DAO, and model responsibilities. The application validates input, prevents duplicate registrations, loads and filters records with pagination, and exports CSV files. Its DAO uses Java's built-in Properties file storage, so the task runs without MySQL or an external JDBC driver; the SQL script remains as a schema reference.
 
 ## 9. Complexity Analysis
 - Validation and conversion are O(1).

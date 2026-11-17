@@ -1,6 +1,6 @@
 # JAVA ASSIGNMENT 4 – Event-Driven GUI Design
 
-This repository contains a Java Swing assignment covering six task areas: fee payment diagnostics, event-driven appointment design, library search layouts, draw pad event handling, currency conversion listener styles, and a JDBC-backed event registration application.
+This repository contains a Java Swing assignment covering six task areas: fee payment diagnostics, event-driven appointment design, library search layouts, draw pad event handling, currency conversion listener styles, and a persistent event registration application.
 
 ## Project structure
 
@@ -18,7 +18,7 @@ This repository contains a Java Swing assignment covering six task areas: fee pa
 
 ## Technical stack
 - Java Swing / AWT
-- JDBC / MySQL
+- Java Properties-based local persistence (Task 6)
 - Java standard library
 - SwingWorker for background work
 
@@ -33,15 +33,8 @@ javac -d out Task05_CurrencyConverter\src\*.java
 javac -d out Task06_EventRegistration\src\*.java
 ```
 
-## MySQL setup
-Create database using the SQL script under `Task06_EventRegistration/database/event_registration.sql`.
-Set environment variables before running the database-connected task:
-
-```powershell
-$env:DB_URL='jdbc:mysql://localhost:3306/event_registration_db'
-$env:DB_USER='root'
-$env:DB_PASSWORD='your_password'
-```
+## Task 6 storage
+Task 6 runs with the JDK alone and saves registrations to `%USERPROFILE%\JAVA_ASSIGNMENT_4\Task06_EventRegistration\registrations.properties`. The SQL file under `Task06_EventRegistration/database/` is retained as an optional schema reference; MySQL is not required.
 
 ## Execution
 ```powershell
@@ -52,6 +45,8 @@ java -cp out DrawPad
 java -cp out Converter
 java -cp out EventRegistrationApp
 ```
+
+See `Task06_EventRegistration/README.md` for Task 6-specific compile, run, and test commands.
 
 ## Screenshot evidence
 All required screenshot evidence should be collected under:
